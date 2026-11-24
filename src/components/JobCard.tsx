@@ -1,6 +1,6 @@
-import { Bookmark, BookmarkCheck, MapPin } from 'lucide-react';
+import { Bookmark, BookmarkCheck, CheckCircle2, MapPin } from 'lucide-react';
 import type { SkillMatchResult } from '../types';
-import { getMatchColor, getMatchDot } from '../utils/skillMatch';
+import { getMatchColor } from '../utils/skillMatch';
 
 interface JobCardProps {
   companyName: string;
@@ -24,9 +24,14 @@ function getInitials(name: string): string {
 
 function getAvatarColor(name: string): string {
   const colors = [
-    '#1e40af', '#7c3aed', '#059669', '#d97706',
-    '#dc2626', '#0891b2', '#4f46e5', '#be185d',
-    '#0d9488', '#6d28d9',
+    '#0070e0',
+    '#0284c7',
+    '#0d9488',
+    '#4f46e5',
+    '#7c3aed',
+    '#d97706',
+    '#dc2626',
+    '#059669',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -46,79 +51,79 @@ export function JobCard({
   onSave,
 }: JobCardProps) {
   const matchColorClass = getMatchColor(matchResult.score);
-  const dotColor = getMatchDot(matchResult.score);
 
   return (
-    <div className="job-card">
-      <div className="job-card-header">
-        <div className="job-card-company-row">
-          <div
-            className="job-card-avatar"
-            style={{ backgroundColor: getAvatarColor(companyName) }}
-          >
-            {getInitials(companyName)}
-          </div>
-          <div className="job-card-company-info">
-            <span className="job-card-company-name">{companyName}</span>
-            <span className="job-card-location">
-              <MapPin size={13} />
-              {location}
-            </span>
-          </div>
-        </div>
-        <div className={`job-card-match-badge ${matchColorClass}`}>
-          <span
-            className="match-dot"
-            style={{ backgroundColor: dotColor }}
-          />
-          {matchResult.score}% Match
-        </div>
+    <article className="glints-job-card">
+      <div className="glints-job-top">
+        <h3 className="glints-job-title">{title}</h3>
+        <span className="glints-job-salary">
+          {salary || 'Competitive'}
+        </span>
       </div>
 
-      <h4 className="job-card-title">{title}</h4>
-
-      <div className="job-card-skills">
+      <div className="glints-job-pills">
+        <span className={`glints-match-pill ${matchColorClass}`}>
+          {matchResult.score}% Match
+        </span>
         {matchResult.matched.map((skill) => (
-          <span key={skill} className="skill-tag skill-tag-match">
+          <span key={skill} className="glints-skill-pill is-matched">
             {skill}
           </span>
         ))}
         {matchResult.missing.map((skill) => (
-          <span key={skill} className="skill-tag skill-tag-missing">
+          <span key={skill} className="glints-skill-pill is-missing">
             {skill}
           </span>
         ))}
       </div>
 
-      <div className="job-card-footer">
-        <div className="job-card-salary">
-          {salary || 'Gaji tidak tercantum'}
-          {salary && <span className="salary-period"> / bulan</span>}
+      <div className="glints-job-company">
+        <div
+          className="glints-company-logo"
+          style={{ backgroundColor: getAvatarColor(companyName) }}
+        >
+          {getInitials(companyName)}
         </div>
+        <div className="glints-company-meta">
+          <div className="glints-company-name-row">
+            <CheckCircle2 size={14} className="glints-verified-icon" />
+            <span className="glints-company-name">{companyName}</span>
+          </div>
+          <div className="glints-company-location">
+            <MapPin size={13} />
+            <span>{location || 'Indonesia'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="glints-job-footer">
+        <span className="glints-job-note">
+          {tags.length === 0
+            ? 'Tanpa syarat skill khusus'
+            : matchResult.missing.length > 0
+              ? `Kurang ${matchResult.missing.length} skill: ${matchResult.missing.slice(0, 2).join(', ')}${matchResult.missing.length > 2 ? '...' : ''}`
+              : 'Semua skill cocok!'}
+        </span>
         <button
-          className={`btn ${isApplied ? 'btn-disabled' : 'btn-outline-primary'}`}
+          type="button"
+          className={`glints-save-btn ${isApplied ? 'is-applied' : ''}`}
           onClick={onSave}
           disabled={isApplied}
+          title={isApplied ? 'Sudah ada di daftar lamaran' : 'Simpan ke Wishlist'}
         >
           {isApplied ? (
             <>
               <BookmarkCheck size={16} />
-              Sudah Dilamar
+              <span>Sudah Dilamar</span>
             </>
           ) : (
             <>
               <Bookmark size={16} />
-              Simpan ke Wishlist
+              <span>Simpan ke Wishlist</span>
             </>
           )}
         </button>
       </div>
-
-      {tags.length > 0 && matchResult.missing.length > 0 && (
-        <div className="job-card-missing-note">
-          Missing: {matchResult.missing.join(', ')}
-        </div>
-      )}
-    </div>
+    </article>
   );
 }

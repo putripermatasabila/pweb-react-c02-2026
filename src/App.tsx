@@ -3,7 +3,6 @@ import type { Application, JobListing, WorkMode, DataSource } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Navbar } from './components/Navbar';
 import { StatsCards } from './components/StatsCards';
-import { SkillProfile } from './components/SkillProfile';
 import { JobExplorer } from './components/JobExplorer';
 import { ApplicationForm } from './components/ApplicationForm';
 import { ApplicationList } from './components/ApplicationList';
@@ -80,38 +79,26 @@ export default function App() {
         applicationCount={applications.length}
       />
 
-      <main className="main-content">
-        <StatsCards applications={applications} />
+      {activeTab === 'explore' && (
+        <JobExplorer
+          kaptenSkills={kaptenSkills}
+          onSkillsChange={setKaptenSkills}
+          dataSource={dataSource}
+          onDataSourceChange={setDataSource}
+          onSaveToWishlist={handleSaveToWishlist}
+          isAlreadyApplied={isAlreadyApplied}
+        />
+      )}
 
-        {activeTab === 'explore' && (
-          <div className="content-layout">
-            <aside className="sidebar">
-              <SkillProfile
-                skills={kaptenSkills}
-                onSkillsChange={setKaptenSkills}
-                dataSource={dataSource}
-                onDataSourceChange={setDataSource}
-              />
-            </aside>
-            <section className="content-main">
-              <JobExplorer
-                kaptenSkills={kaptenSkills}
-                dataSource={dataSource}
-                onDataSourceChange={setDataSource}
-                onSaveToWishlist={handleSaveToWishlist}
-                isAlreadyApplied={isAlreadyApplied}
-              />
-            </section>
-          </div>
-        )}
-
-        {activeTab === 'pipeline' && (
+      {activeTab === 'pipeline' && (
+        <main className="glints-main-container glints-pipeline-page">
+          <StatsCards applications={applications} />
           <ApplicationList
             applications={applications}
             kaptenSkills={kaptenSkills}
           />
-        )}
-      </main>
+        </main>
+      )}
 
       {showForm && (
         <ApplicationForm

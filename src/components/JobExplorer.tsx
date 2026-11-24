@@ -1,21 +1,33 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, RefreshCw, AlertCircle, Database, Loader2 } from 'lucide-react';
+import {
+  Search,
+  RefreshCw,
+  AlertCircle,
+  Database,
+  Loader2,
+  Briefcase,
+} from 'lucide-react';
 import type { JobListing, DataSource } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import { calculateSkillMatch } from '../utils/skillMatch';
 import { fetchRemoteJobs, fetchFallbackJobs } from '../services/jobService';
+import { SkillProfile } from './SkillProfile';
 import { JobCard } from './JobCard';
 
 interface JobExplorerProps {
   kaptenSkills: string[];
+  onSkillsChange: (skills: string[]) => void;
   dataSource: DataSource;
   onDataSourceChange: (source: DataSource) => void;
   onSaveToWishlist: (job: JobListing) => void;
   isAlreadyApplied: (company: string, role: string) => boolean;
 }
 
+const POPULAR_KEYWORDS = ['React', 'TypeScript', 'Python', 'Docker', 'Node.js'];
+
 export function JobExplorer({
   kaptenSkills,
+  onSkillsChange,
   dataSource,
   onDataSourceChange,
   onSaveToWishlist,
@@ -38,17 +50,17 @@ export function JobExplorer({
       setError(null);
 
       try {
-        let fetchedJobs: JobListing[];
-        if (dataSource === 'api') {
-          fetchedJobs = await fetchRemoteJobs(controller.signal);
-        } else {
-          fetchedJobs = await fetchFallbackJobs();
-        }
+        const fetchedJobs =
+          dataSource === 'api'
+            ? await fetchRemoteJobs(controller.signal)
+            : await fetchFallbackJobs();
         setJobs(fetchedJobs);
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         setError(
-          err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat data'
+          err instanceof Error
+            ? err.message
+            : 'Terjadi kesalahan saat memuat data'
         );
       } finally {
         setIsLoading(false);
@@ -104,9 +116,7 @@ export function JobExplorer({
             : await fetchFallbackJobs();
         setJobs(fetchedJobs);
       } catch (err: unknown) {
-        setError(
-          err instanceof Error ? err.message : 'Terjadi kesalahan'
-        );
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
       } finally {
         setIsLoading(false);
       }
@@ -114,120 +124,189 @@ export function JobExplorer({
     loadJobs();
   };
 
-  const handleFallback = () => {
-    onDataSourceChange('local');
-  };
-
   return (
-    <div className="job-explorer">
-      <div className="search-filter-row">
-        <div className="search-box">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Cari posisi atau perusahaan..."
-            className="input search-input"
-          />
-        </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="input select-filter"
-        >
-          <option value="">Semua Kategori</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'match' | 'default')}
-          className="input select-filter"
-        >
-          <option value="match">Match Tertinggi</option>
-          <option value="default">Default</option>
-        </select>
-      </div>
+    <div className="glints-explore-page">
+      {/* Hero Banner & Unified Search Bar ala Glints */}
+      <section className="glints-hero">
+        <div className="glints-hero-inner">
+          <div className="glints-breadcrumb">
+            <span>Jobs</span>
+            <span>/</span>
+            <span>Internship</span>
+            <span>/</span>
+            <span className="is-current">Software Development</span>
+          </div>
 
-      {isLoading && (
-        <div className="state-container state-loading">
-          <Loader2 size={40} className="spinner" />
-          <p>Memuat lowongan...</p>
-        </div>
-      )}
+          <h1 className="glints-hero-title">
+            Temukan Lowongan Magang Tech Terbaik
+          </h1>
 
-      {error && (
-        <div className="state-container state-error">
-          <AlertCircle size={40} />
-          <h3>Gagal Memuat Data</h3>
-          <p>{error}</p>
-          <div className="error-actions">
-            <button onClick={handleRetry} className="btn btn-primary">
-              <RefreshCw size={16} />
-              Coba Lagi
+          <form
+            className="glints-search-bar"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <div className="glints-search-field">
+              <Search size={18} className="glints-search-icon" />
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Search by Title, Skill or Company"
+                className="glints-search-input"
+              />
+            </div>
+
+            <div className="glints-search-divider" />
+
+            <div className="glints-category-field">
+              <Briefcase size={16} className="glints-search-icon" />
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="glints-category-select"
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" className="glints-search-btn">
+              SEARCH
             </button>
-            {dataSource === 'api' && (
-              <button onClick={handleFallback} className="btn btn-outline">
-                <Database size={16} />
-                Gunakan Fallback Lokal
+          </form>
+
+          <div className="glints-popular-row">
+            <span className="glints-popular-label">Popular:</span>
+            {POPULAR_KEYWORDS.map((kw) => (
+              <button
+                key={kw}
+                type="button"
+                className={`glints-popular-chip ${
+                  searchKeyword.toLowerCase() === kw.toLowerCase()
+                    ? 'is-active'
+                    : ''
+                }`}
+                onClick={() =>
+                  setSearchKeyword(
+                    searchKeyword.toLowerCase() === kw.toLowerCase() ? '' : kw
+                  )
+                }
+              >
+                {kw}
               </button>
-            )}
+            ))}
           </div>
         </div>
-      )}
+      </section>
 
-      {!isLoading && !error && filteredJobs.length === 0 && (
-        <div className="state-container state-empty">
-          <Search size={40} />
-          <h3>Tidak Ada Lowongan</h3>
-          <p>
-            {debouncedSearch
-              ? `Tidak ditemukan lowongan untuk "${debouncedSearch}"`
-              : 'Belum ada lowongan yang tersedia.'}
-          </p>
-        </div>
-      )}
+      {/* Main Content 2 Kolom ala Glints */}
+      <div className="glints-main-container">
+        <div className="glints-layout-grid">
+          <aside className="glints-sidebar">
+            <SkillProfile
+              skills={kaptenSkills}
+              onSkillsChange={onSkillsChange}
+              dataSource={dataSource}
+              onDataSourceChange={onDataSourceChange}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          </aside>
 
-      {!isLoading && !error && filteredJobs.length > 0 && (
-        <>
-          <p className="result-count">
-            Menampilkan {filteredJobs.length} lowongan
-            {dataSource === 'local' && (
-              <span className="source-badge">
-                <Database size={13} /> Data Lokal
-              </span>
-            )}
-          </p>
-          <div className="job-grid">
-            {filteredJobs.map((job) => {
-              const matchResult = calculateSkillMatch(
-                kaptenSkills,
-                job.tags
-              );
-              return (
-                <JobCard
-                  key={job.id}
-                  companyName={job.company_name}
-                  location={job.candidate_required_location}
-                  title={job.title}
-                  salary={job.salary}
-                  tags={job.tags}
-                  matchResult={matchResult}
-                  isApplied={isAlreadyApplied(
-                    job.company_name,
-                    job.title
+          <section className="glints-results-section">
+            <div className="glints-results-header">
+              <h2 className="glints-results-heading">
+                Software Development Internship Jobs
+              </h2>
+              {!isLoading && !error && (
+                <div className="glints-results-meta">
+                  <span>Menampilkan {filteredJobs.length} lowongan</span>
+                  {dataSource === 'local' && (
+                    <span className="glints-source-badge">
+                      <Database size={12} /> Dataset Lokal
+                    </span>
                   )}
-                  onSave={() => onSaveToWishlist(job)}
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
+                </div>
+              )}
+            </div>
+
+            {isLoading && (
+              <div className="state-container state-loading">
+                <Loader2 size={40} className="spinner" />
+                <p>Memuat lowongan magang...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="state-container state-error">
+                <AlertCircle size={40} />
+                <h3>Gagal Memuat Data</h3>
+                <p>{error}</p>
+                <div className="error-actions">
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    className="glints-btn-solid"
+                  >
+                    <RefreshCw size={15} />
+                    Coba Lagi
+                  </button>
+                  {dataSource === 'api' && (
+                    <button
+                      type="button"
+                      onClick={() => onDataSourceChange('local')}
+                      className="glints-btn-outline"
+                    >
+                      <Database size={15} />
+                      Gunakan Fallback Lokal
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!isLoading && !error && filteredJobs.length === 0 && (
+              <div className="state-container state-empty">
+                <Search size={40} />
+                <h3>Tidak Ada Lowongan</h3>
+                <p>
+                  {debouncedSearch
+                    ? `Tidak ditemukan lowongan untuk "${debouncedSearch}"`
+                    : 'Belum ada lowongan yang tersedia.'}
+                </p>
+              </div>
+            )}
+
+            {!isLoading && !error && filteredJobs.length > 0 && (
+              <div className="glints-jobs-grid">
+                {filteredJobs.map((job) => {
+                  const matchResult = calculateSkillMatch(
+                    kaptenSkills,
+                    job.tags
+                  );
+                  return (
+                    <JobCard
+                      key={job.id}
+                      companyName={job.company_name}
+                      location={job.candidate_required_location}
+                      title={job.title}
+                      salary={job.salary}
+                      tags={job.tags}
+                      matchResult={matchResult}
+                      isApplied={isAlreadyApplied(job.company_name, job.title)}
+                      onSave={() => onSaveToWishlist(job)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

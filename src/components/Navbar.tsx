@@ -1,4 +1,4 @@
-import { Briefcase, Plus } from 'lucide-react';
+import { Star, Plus } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -14,37 +14,56 @@ export function Navbar({
   applicationCount,
 }: NavbarProps) {
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-left">
-          <div className="navbar-logo">
-            <div className="navbar-logo-icon">
-              <Briefcase size={18} color="#fff" />
-            </div>
-            <span className="navbar-logo-text">Aku Mw Magang</span>
-          </div>
-          <div className="navbar-tabs">
+    <header className="glints-navbar">
+      <div className="glints-navbar-inner">
+        <div className="glints-navbar-left">
+          <button
+            type="button"
+            className="glints-brand"
+            onClick={() => onTabChange('explore')}
+          >
+            <span className="glints-brand-star">
+              <Star size={20} fill="#facc15" color="#f59e0b" />
+            </span>
+            <span className="glints-brand-text">
+              <span className="glints-brand-name">akumwmagang</span>
+              <span className="glints-brand-sub">Career Tracker</span>
+            </span>
+          </button>
+
+          <nav className="glints-nav-links">
             <button
-              className={`navbar-tab ${activeTab === 'explore' ? 'navbar-tab-active' : ''}`}
+              type="button"
+              className={`glints-nav-link ${
+                activeTab === 'explore' ? 'is-active' : ''
+              }`}
               onClick={() => onTabChange('explore')}
             >
-              Eksplorasi Lowongan
+              JOBS
             </button>
             <button
-              className={`navbar-tab ${activeTab === 'pipeline' ? 'navbar-tab-active' : ''}`}
+              type="button"
+              className={`glints-nav-link ${
+                activeTab === 'pipeline' ? 'is-active' : ''
+              }`}
               onClick={() => onTabChange('pipeline')}
             >
-              Pipeline Lamaran ({applicationCount})
+              PIPELINE LAMARAN ({applicationCount})
             </button>
-          </div>
+          </nav>
         </div>
-        <div className="navbar-right">
-          <button className="btn btn-add" onClick={onAddClick}>
-            <Plus size={18} />
-            Catat Lamaran
+
+        <div className="glints-navbar-right">
+          <button
+            type="button"
+            className="glints-btn-solid"
+            onClick={onAddClick}
+          >
+            <Plus size={16} />
+            CATAT LAMARAN
           </button>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

@@ -1,0 +1,139 @@
+{
+  "jobs": [
+    {
+      "id": 2001,
+      "title": "Frontend Developer Intern",
+      "company_name": "Tokopedia",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Hybrid)",
+      "salary": "Rp 4.000.000",
+      "tags": ["React", "TypeScript", "CSS", "Redux"]
+    },
+    {
+      "id": 2002,
+      "title": "Backend Engineer Intern",
+      "company_name": "Gojek",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Remote)",
+      "salary": "Rp 5.000.000",
+      "tags": ["Go", "Docker", "Kubernetes", "PostgreSQL"]
+    },
+    {
+      "id": 2003,
+      "title": "Full Stack Developer Intern",
+      "company_name": "Bukalapak",
+      "category": "Software Development",
+      "candidate_required_location": "Bandung (Onsite)",
+      "salary": "Rp 3.500.000",
+      "tags": ["React", "Node.js", "Express", "MongoDB"]
+    },
+    {
+      "id": 2004,
+      "title": "Mobile Developer Intern",
+      "company_name": "Traveloka",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Hybrid)",
+      "salary": "Rp 4.500.000",
+      "tags": ["React Native", "TypeScript", "Firebase"]
+    },
+    {
+      "id": 2005,
+      "title": "Data Engineer Intern",
+      "company_name": "Shopee Indonesia",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Onsite)",
+      "salary": "Rp 5.500.000",
+      "tags": ["Python", "SQL", "Spark", "Airflow"]
+    },
+    {
+      "id": 2006,
+      "title": "DevOps Intern",
+      "company_name": "Blibli",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Remote)",
+      "salary": "Rp 4.000.000",
+      "tags": ["Docker", "Jenkins", "AWS", "Linux"]
+    },
+    {
+      "id": 2007,
+      "title": "Frontend Engineer Intern",
+      "company_name": "Tiket.com",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Hybrid)",
+      "salary": "Rp 3.800.000",
+      "tags": ["Vue.js", "TypeScript", "CSS", "Webpack"]
+    },
+    {
+      "id": 2008,
+      "title": "AI/ML Intern",
+      "company_name": "Kata.ai",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Remote)",
+      "salary": "Rp 5.000.000",
+      "tags": ["Python", "TensorFlow", "NLP", "Docker"]
+    },
+    {
+      "id": 2009,
+      "title": "Software Engineer Intern",
+      "company_name": "Nusantara Cloud",
+      "category": "Software Development",
+      "candidate_required_location": "Surabaya (Hybrid)",
+      "salary": "Rp 4.500.000",
+      "tags": ["React", "TypeScript", "CSS", "Docker"]
+    },
+    {
+      "id": 2010,
+      "title": "QA Engineer Intern",
+      "company_name": "Dana Indonesia",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Onsite)",
+      "salary": "Rp 3.500.000",
+      "tags": ["Selenium", "JavaScript", "Cypress", "Git"]
+    },
+    {
+      "id": 2011,
+      "title": "Cloud Engineer Intern",
+      "company_name": "GoTo Financial",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Remote)",
+      "salary": "Rp 6.000.000",
+      "tags": ["AWS", "Terraform", "Python", "Docker"]
+    },
+    {
+      "id": 2012,
+      "title": "React Developer Intern",
+      "company_name": "Ruangguru",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Hybrid)",
+      "salary": "Rp 4.200.000",
+      "tags": ["React", "TypeScript", "Node.js", "GraphQL"]
+    },
+    {
+      "id": 2013,
+      "title": "Security Engineer Intern",
+      "company_name": "OVO",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Onsite)",
+      "salary": "Rp 4.800.000",
+      "tags": ["Python", "Linux", "Network", "Cryptography"]
+    },
+    {
+      "id": 2014,
+      "title": "Platform Engineer Intern",
+      "company_name": "Ajaib",
+      "category": "Software Development",
+      "candidate_required_location": "Jakarta (Remote)",
+      "salary": "Rp 5.200.000",
+      "tags": ["Go", "Kubernetes", "gRPC", "PostgreSQL"]
+    },
+    {
+      "id": 2015,
+      "title": "Web Developer Intern",
+      "company_name": "Dicoding",
+      "category": "Software Development",
+      "candidate_required_location": "Bandung (Hybrid)",
+      "salary": "Rp 3.000.000",
+      "tags": ["HTML", "CSS", "JavaScript", "React"]
+    }
+  ]
+}

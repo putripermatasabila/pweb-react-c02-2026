@@ -33,6 +33,10 @@ export function ApplicationForm({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const skills = requiredSkillsInput
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const newErrors: Record<string, string> = {};
 
     if (!company.trim()) {
@@ -41,7 +45,7 @@ export function ApplicationForm({
     if (!role.trim()) {
       newErrors.role = 'Posisi/Role wajib diisi';
     }
-    if (!requiredSkillsInput.trim()) {
+    if (skills.length === 0) {
       newErrors.skills = 'Required skills wajib diisi';
     }
 
@@ -73,11 +77,6 @@ export function ApplicationForm({
       else if (newErrors.date) dateRef.current?.focus();
       return;
     }
-
-    const skills = requiredSkillsInput
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
 
     const now = new Date().toISOString();
 

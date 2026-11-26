@@ -2,10 +2,11 @@ import { useState } from 'react';
 import type { Application, JobListing, WorkMode, DataSource } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Navbar } from './components/Navbar';
-import { StatsCards } from './components/StatsCards';
 import { JobExplorer } from './components/JobExplorer';
 import { ApplicationForm } from './components/ApplicationForm';
 import { ApplicationList } from './components/ApplicationList';
+import { ApplicationDetail } from './components/ApplicationDetail';
+import { simulateGhosting } from './utils/applicationPipeline';
 import './App.css';
 
 function parseWorkMode(location: string): WorkMode {
@@ -27,6 +28,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('explore');
   const [showForm, setShowForm] = useState(false);
   const [dataSource, setDataSource] = useState<DataSource>('api');
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
+  const selectedApplication = applications.find((app) => app.id === selectedApplicationId);
 
   const handleSaveToWishlist = (job: JobListing) => {
     const isDuplicate = applications.some(
@@ -62,6 +65,13 @@ export default function App() {
     setApplications((prev) => [...prev, app]);
   };
 
+  const updateApplication = (
+    id: string,
+    update: (application: Application) => Application
+  ) => {
+    setApplications((previous) => previous.map((app) => app.id === id ? update(app) : app));
+  };
+
   const isAlreadyApplied = (companyName: string, title: string): boolean => {
     return applications.some(
       (app) =>
@@ -92,11 +102,20 @@ export default function App() {
 
       {activeTab === 'pipeline' && (
         <main className="glints-main-container glints-pipeline-page">
-          <StatsCards applications={applications} />
           <ApplicationList
             applications={applications}
             kaptenSkills={kaptenSkills}
+            onOpenDetail={setSelectedApplicationId}
+            onSimulateGhosting={(id) => updateApplication(id, simulateGhosting)}
           />
+          {selectedApplication && (
+            <ApplicationDetail
+              key={selectedApplication.id}
+              application={selectedApplication}
+              onUpdate={(update) => updateApplication(selectedApplication.id, update)}
+              onClose={() => setSelectedApplicationId(null)}
+            />
+          )}
         </main>
       )}
 

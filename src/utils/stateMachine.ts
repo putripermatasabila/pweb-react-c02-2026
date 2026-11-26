@@ -10,6 +10,8 @@ const validTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {
   GHOSTED: ['SCREENING'],
 };
 
+export const applicationStatuses = Object.keys(validTransitions) as ApplicationStatus[];
+
 export function getValidNextStatuses(
   current: ApplicationStatus
 ): ApplicationStatus[] {

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   FileText,
   TrendingUp,
@@ -7,13 +6,14 @@ import {
   Trophy,
 } from 'lucide-react';
 import type { Application } from '../types';
+import { isAtRiskOfGhosting } from '../utils/applicationPipeline';
 
 interface StatsCardsProps {
   applications: Application[];
+  now: number;
 }
 
-export function StatsCards({ applications }: StatsCardsProps) {
-  const [now] = useState(() => Date.now());
+export function StatsCards({ applications, now }: StatsCardsProps) {
   const total = applications.length;
 
   const responded = applications.filter(
@@ -29,11 +29,8 @@ export function StatsCards({ applications }: StatsCardsProps) {
   const interviewRate =
     responded > 0 ? Math.round((interviewed / responded) * 100) : 0;
 
-  const fourteenDays = 14 * 24 * 60 * 60 * 1000;
   const ghostingCount = applications.filter(
-    (a) =>
-      (a.status === 'APPLIED' || a.status === 'SCREENING') &&
-      now - new Date(a.lastUpdatedAt).getTime() > fourteenDays
+    (application) => isAtRiskOfGhosting(application, now)
   ).length;
 
   const offerCount = applications.filter(

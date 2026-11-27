@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Trash2, X } from 'lucide-react';
 import type { Application, ApplicationStatus, WorkMode } from '../types';
-import { formatApplicationDateTime, getInterviewTimestamp } from '../utils/applicationPipeline';
+import { canSimulateGhosting, formatApplicationDateTime, getInterviewTimestamp } from '../utils/applicationPipeline';
 import { canTransition, getValidNextStatuses } from '../utils/stateMachine';
+import { InterviewTimer } from './InterviewTimer';
 
 type ApplicationTransition =
   | { status: 'APPLIED'; cvVersion: string; appliedDate: string }
@@ -13,6 +14,8 @@ type ApplicationTransition =
 interface ApplicationDetailProps {
   application: Application;
   onUpdate: (update: (application: Application) => Application) => void;
+  onDelete?: (id: string) => void;
+  onSimulateGhosting?: (id: string) => void;
   onClose: () => void;
   children?: ReactNode;
 }
@@ -126,7 +129,14 @@ function StatusForm({ application, onTransition }: StatusFormProps) {
   );
 }
 
-export function ApplicationDetail({ application, onUpdate, onClose, children }: ApplicationDetailProps) {
+export function ApplicationDetail({
+  application,
+  onUpdate,
+  onDelete,
+  onSimulateGhosting,
+  onClose,
+  children,
+}: ApplicationDetailProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [checklistText, setChecklistText] = useState('');
   const [note, setNote] = useState('');
@@ -215,10 +225,36 @@ export function ApplicationDetail({ application, onUpdate, onClose, children }: 
             {interviewTime !== undefined && <> · Interview {formatApplicationDateTime(interviewTime)}</>}
           </p>
         </div>
-        <span className={`status-badge status-${application.status.toLowerCase()}`}>{application.status}</span>
-        <button type="button" onClick={onClose} className="modal-close" aria-label="Tutup detail lamaran">
-          <X size={20} aria-hidden="true" />
-        </button>
+
+        <div className="application-detail-header-actions">
+          <span className={`status-badge status-${application.status.toLowerCase()}`}>{application.status}</span>
+          {onSimulateGhosting && canSimulateGhosting(application.status) && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => onSimulateGhosting(application.id)}
+            >
+              Simulasi +15 Hari
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-delete-danger"
+              onClick={() => {
+                onDelete(application.id);
+                onClose();
+              }}
+              title="Hapus lamaran ini"
+            >
+              <Trash2 size={14} />
+              Hapus
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="modal-close" aria-label="Tutup detail lamaran">
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
       </header>
 
       <div className="application-detail-content">
@@ -272,6 +308,7 @@ export function ApplicationDetail({ application, onUpdate, onClose, children }: 
 
         <div className="application-detail-column">
           {children}
+          <InterviewTimer />
           <section className="application-detail-section" aria-labelledby="application-activity-title">
             <h3 id="application-activity-title">Riwayat aktivitas</h3>
             {activityLogs.length === 0 ? (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, type ChangeEvent } from 'react';
 import type { Application, JobListing, WorkMode, DataSource } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Navbar } from './components/Navbar';
@@ -6,6 +6,8 @@ import { JobExplorer } from './components/JobExplorer';
 import { ApplicationForm } from './components/ApplicationForm';
 import { ApplicationList } from './components/ApplicationList';
 import { ApplicationDetail } from './components/ApplicationDetail';
+import { OfferComparator } from './components/OfferComparator';
+import { UndoToast } from './components/UndoToast';
 import { simulateGhosting } from './utils/applicationPipeline';
 import './App.css';
 
@@ -29,7 +31,128 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [dataSource, setDataSource] = useState<DataSource>('api');
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
+
+  // Undo delete state & useRef timers (Fitur 6)
+  const [deletedAppInfo, setDeletedAppInfo] = useState<{
+    app: Application;
+    index: number;
+  } | null>(null);
+  const [undoCountdown, setUndoCountdown] = useState(5);
+  const deleteTimerRef = useRef<number | null>(null);
+  const countdownIntervalRef = useRef<number | null>(null);
+
   const selectedApplication = applications.find((app) => app.id === selectedApplicationId);
+  const offerCount = applications.filter((app) => app.status === 'OFFER').length;
+
+  const clearDeleteTimers = () => {
+    if (deleteTimerRef.current !== null) {
+      window.clearTimeout(deleteTimerRef.current);
+      deleteTimerRef.current = null;
+    }
+    if (countdownIntervalRef.current !== null) {
+      window.clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  };
+
+  const handleDeleteApplication = (id: string) => {
+    // If a deletion happened previously within 5 seconds, clear old timer using useRef
+    clearDeleteTimers();
+
+    const targetIndex = applications.findIndex((app) => app.id === id);
+    if (targetIndex === -1) return;
+    const targetApp = applications[targetIndex];
+
+    // Remove application immutably
+    setApplications((prev) => prev.filter((app) => app.id !== id));
+
+    if (selectedApplicationId === id) {
+      setSelectedApplicationId(null);
+    }
+
+    setDeletedAppInfo({ app: targetApp, index: targetIndex });
+    setUndoCountdown(5);
+
+    // Live display countdown
+    countdownIntervalRef.current = window.setInterval(() => {
+      setUndoCountdown((prev) => {
+        if (prev <= 1) {
+          if (countdownIntervalRef.current !== null) {
+            window.clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // 5-second timer managed with useRef
+    deleteTimerRef.current = window.setTimeout(() => {
+      setDeletedAppInfo(null);
+      clearDeleteTimers();
+    }, 5000);
+  };
+
+  const handleUndoDelete = () => {
+    clearDeleteTimers();
+    if (!deletedAppInfo) return;
+
+    setApplications((prev) => {
+      const copy = [...prev];
+      const insertAt = Math.min(deletedAppInfo.index, copy.length);
+      copy.splice(insertAt, 0, deletedAppInfo.app);
+      return copy;
+    });
+
+    setDeletedAppInfo(null);
+  };
+
+  const handleDismissUndo = () => {
+    clearDeleteTimers();
+    setDeletedAppInfo(null);
+  };
+
+  // Nilai Tambahan (Bonus): Export / Import backup JSON
+  const handleExportData = () => {
+    const backupData = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      kaptenSkills,
+      applications,
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kapten-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportData = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (Array.isArray(parsed.applications)) {
+          setApplications(parsed.applications);
+        }
+        if (Array.isArray(parsed.kaptenSkills)) {
+          setKaptenSkills(parsed.kaptenSkills);
+        }
+      } catch {
+        // Silently ignore or invalid json
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const handleSaveToWishlist = (job: JobListing) => {
     const isDuplicate = applications.some(
@@ -87,6 +210,9 @@ export default function App() {
         onTabChange={setActiveTab}
         onAddClick={() => setShowForm(true)}
         applicationCount={applications.length}
+        offerCount={offerCount}
+        onExportData={handleExportData}
+        onImportData={handleImportData}
       />
 
       {activeTab === 'explore' && (
@@ -107,16 +233,27 @@ export default function App() {
             kaptenSkills={kaptenSkills}
             onOpenDetail={setSelectedApplicationId}
             onSimulateGhosting={(id) => updateApplication(id, simulateGhosting)}
+            onDelete={handleDeleteApplication}
           />
           {selectedApplication && (
             <ApplicationDetail
               key={selectedApplication.id}
               application={selectedApplication}
               onUpdate={(update) => updateApplication(selectedApplication.id, update)}
+              onDelete={handleDeleteApplication}
+              onSimulateGhosting={(id) => updateApplication(id, simulateGhosting)}
               onClose={() => setSelectedApplicationId(null)}
             />
           )}
         </main>
+      )}
+
+      {activeTab === 'compare' && (
+        <OfferComparator
+          applications={applications}
+          kaptenSkills={kaptenSkills}
+          onGoToPipeline={() => setActiveTab('pipeline')}
+        />
       )}
 
       {showForm && (
@@ -124,6 +261,15 @@ export default function App() {
           onSubmit={handleAddApplication}
           onClose={() => setShowForm(false)}
           applications={applications}
+        />
+      )}
+
+      {deletedAppInfo && (
+        <UndoToast
+          deletedApp={deletedAppInfo.app}
+          countdown={undoCountdown}
+          onUndo={handleUndoDelete}
+          onDismiss={handleDismissUndo}
         />
       )}
     </div>

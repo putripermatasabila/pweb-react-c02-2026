@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Search,
   RefreshCw,
@@ -39,6 +39,22 @@ export function JobExplorer({
   const [searchKeyword, setSearchKeyword] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [sortBy, setSortBy] = useState<'match' | 'default'>('match');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const debouncedSearch = useDebounce(searchKeyword, 400);
 
@@ -148,10 +164,11 @@ export function JobExplorer({
             <div className="glints-search-field">
               <Search size={18} className="glints-search-icon" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="Search by Title, Skill or Company"
+                placeholder="Search by Title, Skill or Company (tekan /)"
                 className="glints-search-input"
               />
             </div>

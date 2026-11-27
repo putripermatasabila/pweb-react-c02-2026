@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { AlertTriangle, Briefcase, Calendar, FileText, MapPin } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { AlertTriangle, Briefcase, Calendar, FileText, MapPin, Trash2 } from 'lucide-react';
 import type { Application, ApplicationStatus } from '../types';
 import {
   canSimulateGhosting,
@@ -17,6 +17,7 @@ interface ApplicationListProps {
   kaptenSkills: string[];
   onOpenDetail: (id: string) => void;
   onSimulateGhosting: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 type SortOrder = 'recent' | 'interview' | 'offer';
@@ -37,12 +38,29 @@ export function ApplicationList({
   kaptenSkills,
   onOpenDetail,
   onSimulateGhosting,
+  onDelete,
 }: ApplicationListProps) {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<ApplicationStatus | 'all'>('all');
   const [onlyGhosting, setOnlyGhosting] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent');
   const [now, setNow] = useState(() => Date.now());
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
@@ -89,9 +107,10 @@ export function ApplicationList({
           <label className="form-group">
             <span className="form-label">Cari lamaran</span>
             <input
+              ref={searchInputRef}
               className="input"
               type="search"
-              placeholder="Perusahaan atau posisi"
+              placeholder="Perusahaan atau posisi (tekan /)"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -193,6 +212,17 @@ export function ApplicationList({
                       {canSimulateGhosting(status) && (
                         <button type="button" className="btn btn-ghost" onClick={() => onSimulateGhosting(id)}>
                           Simulasi +15 Hari
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-delete-danger"
+                          onClick={() => onDelete(id)}
+                          title="Hapus lamaran"
+                        >
+                          <Trash2 size={13} aria-hidden="true" />
+                          Hapus
                         </button>
                       )}
                       <button type="button" className="btn btn-primary" onClick={() => onOpenDetail(id)}>

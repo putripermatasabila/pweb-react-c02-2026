@@ -1,10 +1,14 @@
-import { Star, Plus } from 'lucide-react';
+import { Star, Plus, Download, Upload } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 
 interface NavbarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onAddClick: () => void;
   applicationCount: number;
+  offerCount: number;
+  onExportData: () => void;
+  onImportData: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function Navbar({
@@ -12,6 +16,9 @@ export function Navbar({
   onTabChange,
   onAddClick,
   applicationCount,
+  offerCount,
+  onExportData,
+  onImportData,
 }: NavbarProps) {
   return (
     <header className="glints-navbar">
@@ -39,7 +46,7 @@ export function Navbar({
               }`}
               onClick={() => onTabChange('explore')}
             >
-              JOBS
+              EKSPLORASI LOWONGAN
             </button>
             <button
               type="button"
@@ -50,10 +57,42 @@ export function Navbar({
             >
               PIPELINE LAMARAN ({applicationCount})
             </button>
+            <button
+              type="button"
+              className={`glints-nav-link ${
+                activeTab === 'compare' ? 'is-active' : ''
+              }`}
+              onClick={() => onTabChange('compare')}
+            >
+              BANDINGKAN OFFER ({offerCount})
+            </button>
           </nav>
         </div>
 
         <div className="glints-navbar-right">
+          <button
+            type="button"
+            className="glints-btn-outline"
+            onClick={onExportData}
+            title="Ekspor backup data ke format JSON"
+          >
+            <Download size={14} />
+            EKSPOR
+          </button>
+          <label
+            className="glints-btn-outline"
+            style={{ cursor: 'pointer', margin: 0 }}
+            title="Impor backup data dari format JSON"
+          >
+            <Upload size={14} />
+            IMPOR
+            <input
+              type="file"
+              accept=".json"
+              style={{ display: 'none' }}
+              onChange={onImportData}
+            />
+          </label>
           <button
             type="button"
             className="glints-btn-solid"
